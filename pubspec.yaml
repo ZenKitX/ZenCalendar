@@ -64,7 +64,7 @@ dependencies:
   file_picker: ^8.0.0+1
   
   # 通知系统
-  flutter_local_notifications: ^16.3.0
+  flutter_local_notifications: ^15.1.0
   timezone: ^0.9.2
 
 dev_dependencies:
