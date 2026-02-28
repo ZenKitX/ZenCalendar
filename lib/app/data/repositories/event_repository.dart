@@ -88,12 +88,6 @@ class EventRepository {
     await _storageProvider.clearEvents();
   }
 
-  /// 获取事件数量
-  Future<int> count() async {
-    final events = await getAll();
-    return events.length;
-  }
-
   /// 搜索事件
   Future<List<EventModel>> search(String query) async {
     if (query.isEmpty) return [];
@@ -131,5 +125,15 @@ class EventRepository {
       ..sort((a, b) => b.startTime.compareTo(a.startTime));
 
     return pastEvents.take(limit).toList();
+  }
+
+  /// 获取所有事件（别名方法）
+  Future<List<EventModel>> getAllEvents() async {
+    return await getAll();
+  }
+
+  /// 创建事件（别名方法）
+  Future<void> createEvent(EventModel event) async {
+    return await create(event);
   }
 }

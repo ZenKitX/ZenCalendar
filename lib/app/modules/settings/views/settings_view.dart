@@ -161,17 +161,25 @@ class SettingsView extends GetView<SettingsController> {
           ListTile(
             leading: const Icon(Icons.upload_outlined),
             title: const Text('导出数据'),
-            subtitle: const Text('导出为 JSON 文件'),
+            subtitle: const Text('导出为 JSON 或 CSV 文件'),
             trailing: const Icon(Icons.chevron_right),
-            onTap: controller.exportData,
+            onTap: () => _showExportDialog(context),
           ),
           const Divider(height: 1),
           ListTile(
             leading: const Icon(Icons.download_outlined),
             title: const Text('导入数据'),
-            subtitle: const Text('从 JSON 文件导入'),
+            subtitle: const Text('从 JSON 或 CSV 文件导入'),
             trailing: const Icon(Icons.chevron_right),
             onTap: controller.importData,
+          ),
+          const Divider(height: 1),
+          ListTile(
+            leading: const Icon(Icons.backup_outlined),
+            title: const Text('创建备份'),
+            subtitle: const Text('备份当前所有数据'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: controller.createBackup,
           ),
           const Divider(height: 1),
           ListTile(
@@ -257,6 +265,36 @@ class SettingsView extends GetView<SettingsController> {
                 color: Theme.of(context).colorScheme.error,
               ),
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 显示导出对话框
+  void _showExportDialog(BuildContext context) {
+    Get.dialog(
+      AlertDialog(
+        title: const Text('导出数据'),
+        content: const Text('请选择导出格式：'),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(),
+            child: const Text('取消'),
+          ),
+          TextButton(
+            onPressed: () {
+              Get.back();
+              controller.exportDataAsCsv();
+            },
+            child: const Text('CSV'),
+          ),
+          TextButton(
+            onPressed: () {
+              Get.back();
+              controller.exportDataAsJson();
+            },
+            child: const Text('JSON'),
           ),
         ],
       ),
