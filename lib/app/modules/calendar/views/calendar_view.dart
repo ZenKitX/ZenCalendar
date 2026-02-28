@@ -8,6 +8,7 @@ import '../controllers/day_controller.dart';
 import 'widgets/zen_calendar_widget.dart';
 import 'widgets/event_list_widget.dart';
 import 'widgets/view_switcher_widget.dart';
+import 'widgets/zen_loading_widget.dart';
 import 'week_view.dart';
 import 'day_view.dart';
 
@@ -19,8 +20,8 @@ class CalendarView extends GetView<CalendarController> {
   Widget build(BuildContext context) {
     return Obx(() {
       if (controller.isLoading.value && controller.events.isEmpty) {
-        return const Center(
-          child: CircularProgressIndicator(),
+        return const Scaffold(
+          body: ZenLoadingWidget(message: '加载中...'),
         );
       }
 
@@ -77,9 +78,27 @@ class CalendarView extends GetView<CalendarController> {
                 onViewTypeChanged: controller.switchViewType,
               ),
               
-              // 视图内容
+              // 视图内容（带动画）
               Expanded(
-                child: _buildCurrentView(context),
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 300),
+                  transitionBuilder: (Widget child, Animation<double> animation) {
+                    return FadeTransition(
+                      opacity: animation,
+                      child: SlideTransition(
+                        position: Tween<Offset>(
+                          begin: const Offset(0.0, 0.05),
+                          end: Offset.zero,
+                        ).animate(CurvedAnimation(
+                          parent: animation,
+                          curve: Curves.easeOutCubic,
+                        )),
+                        child: child,
+                      ),
+                    );
+                  },
+                  child: _buildCurrentView(context),
+                ),
               ),
             ],
           ),
@@ -134,17 +153,37 @@ class CalendarView extends GetView<CalendarController> {
       case CalendarViewType.month:
         return _buildMonthView(context);
       case CalendarViewType.week:
-        return const WeekView();
+        return WeekView(key: const ValueKey('week_view'));
       case CalendarViewType.day:
-        return const DayView();
+        return DayView(key: const ValueKey('day_view'));
     }
   }
   
   /// 构建月视图
   Widget _buildMonthView(BuildContext context) {
-    return ListView(
-      padding: const EdgeInsets.all(16),
-      children: [
+    return GestureDetector(
+      onHorizontalDragEnd: (details) {
+        // 向左滑动（下一个月）
+        if (details.primaryVelocity != null && details.primaryVelocity! < -500) {
+          final nextMonth = DateTime(
+            controller.focusedDate.value.year,
+            controller.focusedDate.value.month + 1,
+          );
+          controller.focusedDate.value = nextMonth;
+        }
+        // 向右滑动（上一个月）
+        else if (details.primaryVelocity != null && details.primaryVelocity! > 500) {
+          final prevMonth = DateTime(
+            controller.focusedDate.value.year,
+            controller.focusedDate.value.month - 1,
+          );
+          controller.focusedDate.value = prevMonth;
+        }
+      },
+      child: ListView(
+        key: const ValueKey('month_view'),
+        padding: const EdgeInsets.all(16),
+        children: [
         // 日历组件
         ZenCalendarWidget(
           focusedDay: controller.focusedDate.value,
@@ -207,6 +246,7 @@ class CalendarView extends GetView<CalendarController> {
           },
         ),
       ],
+      ),
     );
   }
 
