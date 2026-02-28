@@ -158,6 +158,14 @@ class SettingsView extends GetView<SettingsController> {
             trailing: const Icon(Icons.chevron_right),
             onTap: () => Get.toNamed('/meditation'),
           ),
+          const Divider(height: 1),
+          ListTile(
+            leading: const Icon(Icons.tune),
+            title: const Text('高级设置'),
+            subtitle: const Text('语言、字体、动画、主题自定义'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => Get.toNamed('/advanced-settings'),
+          ),
         ],
       ),
     );

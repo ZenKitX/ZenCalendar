@@ -12,6 +12,7 @@ import '../modules/intention/bindings/intention_binding.dart';
 import '../modules/intention/views/intention_view.dart';
 import '../modules/settings/bindings/settings_binding.dart';
 import '../modules/settings/views/settings_view.dart';
+import '../modules/settings/views/advanced_settings_view.dart';
 import '../modules/search/bindings/search_binding.dart';
 import '../modules/search/views/search_view.dart';
 import '../modules/meditation/bindings/meditation_binding.dart';
@@ -85,6 +86,15 @@ class AppPages {
     GetPage(
       name: _Paths.SETTINGS,
       page: () => const SettingsView(),
+      binding: SettingsBinding(),
+      transition: Transition.rightToLeft,
+      transitionDuration: const Duration(milliseconds: 300),
+    ),
+    
+    // 高级设置页面
+    GetPage(
+      name: _Paths.ADVANCED_SETTINGS,
+      page: () => const AdvancedSettingsView(),
       binding: SettingsBinding(),
       transition: Transition.rightToLeft,
       transitionDuration: const Duration(milliseconds: 300),
