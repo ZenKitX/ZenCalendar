@@ -5,10 +5,12 @@ import '../data/repositories/event_repository.dart';
 import '../data/repositories/intention_repository.dart';
 import '../data/repositories/quote_repository.dart';
 import '../data/repositories/category_repository.dart';
+import '../data/repositories/meditation_repository.dart';
 import '../data/services/export_service.dart';
 import '../data/services/import_service.dart';
 import '../data/services/backup_service.dart';
 import '../data/services/recurrence_service.dart';
+import '../data/services/audio_player_service.dart';
 import '../services/haptic_service.dart';
 
 /// 初始化依赖注入
@@ -50,6 +52,11 @@ Future<void> initDependencies() async {
     permanent: true,
   );
   
+  Get.put<AudioPlayerService>(
+    AudioPlayerService(),
+    permanent: true,
+  );
+  
   // 注册 Repository（需要在 Services 之后）
   Get.put<EventRepository>(
     EventRepository(
@@ -71,6 +78,11 @@ Future<void> initDependencies() async {
   
   Get.put<CategoryRepository>(
     CategoryRepository(Get.find<LocalStorageProvider>()),
+    permanent: true,
+  );
+  
+  Get.put<MeditationRepository>(
+    MeditationRepository(prefs),
     permanent: true,
   );
   
