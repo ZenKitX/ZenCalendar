@@ -58,6 +58,11 @@ dependencies:
   uuid: ^4.2.1
   equatable: ^2.0.5
   
+  # 文件操作（Phase 6 新增）
+  path_provider: ^2.1.4
+  csv: ^6.0.0
+  file_picker: ^8.0.0+1
+  
   # 通知系统
   flutter_local_notifications: ^16.3.0
   timezone: ^0.9.2
