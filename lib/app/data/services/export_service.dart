@@ -53,7 +53,7 @@ class ExportService {
     for (final intention in intentions) {
       final date = '${intention.date.year}-${intention.date.month.toString().padLeft(2, '0')}-${intention.date.day.toString().padLeft(2, '0')}';
       buffer.writeln(
-        '意图,${intention.id},$date,"${_escapeCsv(intention.content)}",,,,,${intention.isCompleted}',
+        '意图,${intention.id},$date,"${_escapeCsv(intention.text)}",,,,,${intention.isCompleted}',
       );
     }
 

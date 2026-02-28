@@ -175,12 +175,12 @@ class ImportService {
   IntentionModel _parseIntentionFromCsv(List<dynamic> row) {
     final id = row[1].toString();
     final date = DateTime.parse(row[2].toString());
-    final content = row[3].toString();
+    final text = row[3].toString();
     final isCompleted = row[9].toString() == 'true';
 
     return IntentionModel.create(
       date: date,
-      content: content,
+      text: text,
     ).copyWith(
       id: id,
       isCompleted: isCompleted,
