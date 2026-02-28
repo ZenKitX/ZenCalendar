@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../data/models/event_model.dart';
+import '../../../data/models/recurrence_rule.dart';
 import '../../../data/repositories/event_repository.dart';
 import '../../../services/haptic_service.dart';
 
@@ -19,13 +20,34 @@ class CreateEventController extends GetxController {
   final endTime = TimeOfDay(hour: TimeOfDay.now().hour + 1, minute: 0).obs;
   final isAllDay = false.obs;
   final isLoading = false.obs;
+  final recurrenceRule = Rxn<RecurrenceRule>();
   
   @override
   void onInit() {
     super.onInit();
-    // 如果从日历页面传入了日期，使用该日期
-    if (Get.arguments != null && Get.arguments is DateTime) {
-      selectedDate.value = Get.arguments;
+    // 如果从日历页面传入了参数
+    if (Get.arguments != null) {
+      if (Get.arguments is DateTime) {
+        // 传入的是日期
+        selectedDate.value = Get.arguments;
+      } else if (Get.arguments is Map<String, dynamic>) {
+        // 传入的是参数对象（来自日视图的时间点击）
+        final args = Get.arguments as Map<String, dynamic>;
+        
+        if (args['date'] != null) {
+          selectedDate.value = args['date'];
+        }
+        
+        if (args['startTime'] != null) {
+          final startDateTime = args['startTime'] as DateTime;
+          startTime.value = TimeOfDay.fromDateTime(startDateTime);
+        }
+        
+        if (args['endTime'] != null) {
+          final endDateTime = args['endTime'] as DateTime;
+          endTime.value = TimeOfDay.fromDateTime(endDateTime);
+        }
+      }
     }
   }
   
@@ -99,6 +121,17 @@ class CreateEventController extends GetxController {
     _hapticService.light();
   }
   
+  /// 设置重复规则
+  void setRecurrenceRule(RecurrenceRule? rule) {
+    recurrenceRule.value = rule;
+    _hapticService.light();
+  }
+  
+  /// 获取重复规则描述
+  String get recurrenceDescription {
+    return recurrenceRule.value?.description ?? '不重复';
+  }
+  
   /// 创建事件
   Future<void> createEvent() async {
     // 验证标题
@@ -139,6 +172,7 @@ class CreateEventController extends GetxController {
         startTime: start,
         endTime: end,
         isAllDay: isAllDay.value,
+        recurrenceRule: recurrenceRule.value,
       );
       
       // 保存到仓库

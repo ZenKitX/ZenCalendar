@@ -8,6 +8,7 @@ import '../data/repositories/category_repository.dart';
 import '../data/services/export_service.dart';
 import '../data/services/import_service.dart';
 import '../data/services/backup_service.dart';
+import '../data/services/recurrence_service.dart';
 import '../services/haptic_service.dart';
 
 /// 初始化依赖注入
@@ -23,30 +24,14 @@ Future<void> initDependencies() async {
     permanent: true,
   );
   
-  // 注册 Repository
-  Get.put<EventRepository>(
-    EventRepository(Get.find<LocalStorageProvider>()),
-    permanent: true,
-  );
-  
-  Get.put<IntentionRepository>(
-    IntentionRepository(Get.find<LocalStorageProvider>()),
-    permanent: true,
-  );
-  
-  Get.put<QuoteRepository>(
-    QuoteRepository(),
-    permanent: true,
-  );
-  
-  Get.put<CategoryRepository>(
-    CategoryRepository(Get.find<LocalStorageProvider>()),
-    permanent: true,
-  );
-  
   // 注册 Services
   Get.put<HapticService>(
     HapticService(),
+    permanent: true,
+  );
+  
+  Get.put<RecurrenceService>(
+    RecurrenceService(),
     permanent: true,
   );
   
@@ -62,6 +47,30 @@ Future<void> initDependencies() async {
   
   Get.put<BackupService>(
     BackupService(),
+    permanent: true,
+  );
+  
+  // 注册 Repository（需要在 Services 之后）
+  Get.put<EventRepository>(
+    EventRepository(
+      Get.find<LocalStorageProvider>(),
+      Get.find<RecurrenceService>(),
+    ),
+    permanent: true,
+  );
+  
+  Get.put<IntentionRepository>(
+    IntentionRepository(Get.find<LocalStorageProvider>()),
+    permanent: true,
+  );
+  
+  Get.put<QuoteRepository>(
+    QuoteRepository(),
+    permanent: true,
+  );
+  
+  Get.put<CategoryRepository>(
+    CategoryRepository(Get.find<LocalStorageProvider>()),
     permanent: true,
   );
   
