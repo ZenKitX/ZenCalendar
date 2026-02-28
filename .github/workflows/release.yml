@@ -6,6 +6,9 @@ on:
       - 'v*'
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build:
     name: Build APK
@@ -24,7 +27,6 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.38.5'
           channel: 'stable'
           cache: true
       
@@ -40,23 +42,23 @@ jobs:
           VERSION=$(grep '^version:' pubspec.yaml | sed 's/version: //' | sed 's/+.*//')
           echo "version=$VERSION" >> $GITHUB_OUTPUT
       
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ github.ref_name }}
-          release_name: ZenCalc ${{ steps.version.outputs.version }}
-          draft: false
-          prerelease: false
+      - name: Rename APK
+        run: |
+          mv build/app/outputs/flutter-apk/app-release.apk build/app/outputs/flutter-apk/ZenCalendar-${{ steps.version.outputs.version }}.apk
       
-      - name: Upload APK to Release
-        uses: actions/upload-release-asset@v1
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: ZenCalendar ${{ steps.version.outputs.version }}
+          files: |
+            build/app/outputs/flutter-apk/ZenCalendar-${{ steps.version.outputs.version }}.apk
+          body: |
+            ## ZenCalendar ${{ steps.version.outputs.version }}
+            
+            ### 下载
+            - [ZenCalendar-${{ steps.version.outputs.version }}.apk](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/ZenCalendar-${{ steps.version.outputs.version }}.apk)
+            
+            ### 更新内容
+            请查看 [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md)
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: build/app/outputs/flutter-apk/app-release.apk
-          asset_name: ZenCalc-${{ steps.version.outputs.version }}.apk
-          asset_content_type: application/vnd.android.package-archive
