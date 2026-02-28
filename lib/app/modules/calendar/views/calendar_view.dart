@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../data/models/calendar_view_type.dart';
+import '../../../routes/app_pages.dart';
 import '../controllers/calendar_controller.dart';
 import '../controllers/week_controller.dart';
 import '../controllers/day_controller.dart';
@@ -27,6 +28,13 @@ class CalendarView extends GetView<CalendarController> {
         appBar: AppBar(
           title: const Text('ZenCalendar'),
           actions: [
+            IconButton(
+              icon: const Icon(Icons.search),
+              onPressed: () {
+                Get.toNamed(Routes.SEARCH);
+              },
+              tooltip: '搜索',
+            ),
             IconButton(
               icon: const Icon(Icons.today_outlined),
               onPressed: () {
