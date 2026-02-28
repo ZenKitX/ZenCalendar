@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
+import 'recurrence_rule.dart';
 
 /// 事件数据模型
 class EventModel extends Equatable {
@@ -14,6 +15,9 @@ class EventModel extends Equatable {
   final List<DateTime> reminders;
   final String? categoryId; // 新增：分类 ID
   final List<String> tags; // 新增：标签列表
+  final RecurrenceRule? recurrenceRule; // 新增：重复规则
+  final String? originalEventId; // 新增：原始事件 ID（用于重复事件实例）
+  final bool isRecurringInstance; // 新增：是否为重复事件实例
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -28,6 +32,9 @@ class EventModel extends Equatable {
     this.reminders = const [],
     this.categoryId,
     this.tags = const [],
+    this.recurrenceRule,
+    this.originalEventId,
+    this.isRecurringInstance = false,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -43,6 +50,7 @@ class EventModel extends Equatable {
     List<DateTime>? reminders,
     String? categoryId,
     List<String>? tags,
+    RecurrenceRule? recurrenceRule,
   }) {
     final now = DateTime.now();
     return EventModel(
@@ -56,8 +64,39 @@ class EventModel extends Equatable {
       reminders: reminders ?? [],
       categoryId: categoryId,
       tags: tags ?? [],
+      recurrenceRule: recurrenceRule,
       createdAt: now,
       updatedAt: now,
+    );
+  }
+
+  /// 创建重复事件实例
+  factory EventModel.createRecurringInstance({
+    required EventModel originalEvent,
+    required DateTime instanceStartTime,
+    required DateTime instanceEndTime,
+  }) {
+    final duration = originalEvent.endTime.difference(originalEvent.startTime);
+    final adjustedEndTime = instanceEndTime.isAfter(instanceStartTime.add(duration))
+        ? instanceEndTime
+        : instanceStartTime.add(duration);
+
+    return EventModel(
+      id: const Uuid().v4(),
+      title: originalEvent.title,
+      description: originalEvent.description,
+      startTime: instanceStartTime,
+      endTime: adjustedEndTime,
+      color: originalEvent.color,
+      isAllDay: originalEvent.isAllDay,
+      reminders: originalEvent.reminders,
+      categoryId: originalEvent.categoryId,
+      tags: originalEvent.tags,
+      recurrenceRule: null, // 实例不包含重复规则
+      originalEventId: originalEvent.id,
+      isRecurringInstance: true,
+      createdAt: originalEvent.createdAt,
+      updatedAt: DateTime.now(),
     );
   }
 
@@ -73,6 +112,9 @@ class EventModel extends Equatable {
     List<DateTime>? reminders,
     String? categoryId,
     List<String>? tags,
+    RecurrenceRule? recurrenceRule,
+    String? originalEventId,
+    bool? isRecurringInstance,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -87,6 +129,9 @@ class EventModel extends Equatable {
       reminders: reminders ?? this.reminders,
       categoryId: categoryId ?? this.categoryId,
       tags: tags ?? this.tags,
+      recurrenceRule: recurrenceRule ?? this.recurrenceRule,
+      originalEventId: originalEventId ?? this.originalEventId,
+      isRecurringInstance: isRecurringInstance ?? this.isRecurringInstance,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
@@ -105,6 +150,9 @@ class EventModel extends Equatable {
       'reminders': reminders.map((r) => r.toIso8601String()).toList(),
       'categoryId': categoryId,
       'tags': tags,
+      'recurrenceRule': recurrenceRule?.toJson(),
+      'originalEventId': originalEventId,
+      'isRecurringInstance': isRecurringInstance,
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
     };
@@ -126,6 +174,11 @@ class EventModel extends Equatable {
           [],
       categoryId: json['categoryId'] as String?,
       tags: (json['tags'] as List<dynamic>?)?.cast<String>() ?? [],
+      recurrenceRule: json['recurrenceRule'] != null
+          ? RecurrenceRule.fromJson(json['recurrenceRule'] as Map<String, dynamic>)
+          : null,
+      originalEventId: json['originalEventId'] as String?,
+      isRecurringInstance: json['isRecurringInstance'] as bool? ?? false,
       createdAt: DateTime.parse(json['createdAt'] as String),
       updatedAt: DateTime.parse(json['updatedAt'] as String),
     );
@@ -157,6 +210,12 @@ class EventModel extends Equatable {
     return !startDate.isAtSameMomentAs(endDate);
   }
 
+  /// 检查是否有重复规则
+  bool get hasRecurrence => recurrenceRule?.hasRecurrence ?? false;
+
+  /// 检查是否为重复事件的主事件
+  bool get isRecurringMaster => hasRecurrence && !isRecurringInstance;
+
   @override
   List<Object?> get props => [
         id,
@@ -169,6 +228,9 @@ class EventModel extends Equatable {
         reminders,
         categoryId,
         tags,
+        recurrenceRule,
+        originalEventId,
+        isRecurringInstance,
         createdAt,
         updatedAt,
       ];

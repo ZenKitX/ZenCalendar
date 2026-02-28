@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../data/models/calendar_view_type.dart';
 import '../controllers/calendar_controller.dart';
 import 'widgets/zen_calendar_widget.dart';
 import 'widgets/event_list_widget.dart';
+import 'widgets/view_switcher_widget.dart';
+import 'week_view.dart';
+import 'day_view.dart';
 
 /// Calendar 视图
 class CalendarView extends GetView<CalendarController> {
@@ -23,90 +27,72 @@ class CalendarView extends GetView<CalendarController> {
           actions: [
             IconButton(
               icon: const Icon(Icons.today_outlined),
-              onPressed: controller.goToToday,
+              onPressed: () {
+                switch (controller.currentViewType.value) {
+                  case CalendarViewType.month:
+                    controller.goToToday();
+                    break;
+                  case CalendarViewType.week:
+                    controller.weekController?.goToThisWeek();
+                    break;
+                  case CalendarViewType.day:
+                    controller.dayController?.goToToday();
+                    break;
+                }
+              },
               tooltip: '回到今天',
             ),
           ],
         ),
         body: RefreshIndicator(
-          onRefresh: controller.loadEvents,
-          child: ListView(
-            padding: const EdgeInsets.all(16),
+          onRefresh: () async {
+            await controller.loadEvents();
+            // 同时刷新子控制器
+            await controller.weekController?.loadEvents();
+            await controller.dayController?.loadEvents();
+          },
+          child: Column(
             children: [
-              // 日历组件
-              ZenCalendarWidget(
-                focusedDay: controller.focusedDate.value,
-                selectedDay: controller.selectedDate.value,
-                onDaySelected: (selectedDay, focusedDay) {
-                  controller.selectDate(selectedDay);
-                },
-                onPageChanged: (focusedDay) {
-                  controller.focusedDate.value = focusedDay;
-                },
-                events: controller.events,
+              // 视图切换器
+              ViewSwitcherWidget(
+                currentViewType: controller.currentViewType.value,
+                onViewTypeChanged: controller.switchViewType,
               ),
               
-              const SizedBox(height: 24),
-              
-              // 日期标题
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    _formatSelectedDate(controller.selectedDate.value),
-                    style: Theme.of(context).textTheme.headlineSmall,
-                  ),
-                  if (controller.selectedDateEvents.isNotEmpty)
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text(
-                        '${controller.selectedDateEvents.length} 个事件',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: Theme.of(context).colorScheme.primary,
-                              fontWeight: FontWeight.bold,
-                            ),
-                      ),
-                    ),
-                ],
-              ),
-              
-              const SizedBox(height: 16),
-              
-              // 事件列表
-              EventListWidget(
-                events: controller.selectedDateEvents,
-                onEventTap: (event) async {
-                  final result = await Get.toNamed('/event/${event.id}');
-                  
-                  // 如果删除或编辑了事件，重新加载
-                  if (result == true) {
-                    controller.loadEvents();
-                  }
-                },
-                onEventDelete: (event) {
-                  _showDeleteDialog(context, event);
-                },
+              // 视图内容
+              Expanded(
+                child: _buildCurrentView(context),
               ),
             ],
           ),
         ),
         floatingActionButton: FloatingActionButton.extended(
           onPressed: () async {
+            DateTime selectedDate;
+            
+            // 根据当前视图获取选中日期
+            switch (controller.currentViewType.value) {
+              case CalendarViewType.month:
+                selectedDate = controller.selectedDate.value;
+                break;
+              case CalendarViewType.week:
+                selectedDate = controller.weekController?.selectedDate.value ?? DateTime.now();
+                break;
+              case CalendarViewType.day:
+                selectedDate = controller.dayController?.selectedDate.value ?? DateTime.now();
+                break;
+            }
+            
             final result = await Get.toNamed(
               '/create-event',
-              arguments: controller.selectedDate.value,
+              arguments: selectedDate,
             );
             
             // 如果创建成功，重新加载事件
             if (result == true) {
               controller.loadEvents();
+              controller.weekController?.loadEvents();
+              controller.dayController?.loadEvents();
             }
           },
           icon: const Icon(Icons.add),
@@ -114,6 +100,88 @@ class CalendarView extends GetView<CalendarController> {
         ),
       );
     });
+  }
+
+  /// 构建当前视图
+  Widget _buildCurrentView(BuildContext context) {
+    switch (controller.currentViewType.value) {
+      case CalendarViewType.month:
+        return _buildMonthView(context);
+      case CalendarViewType.week:
+        return const WeekView();
+      case CalendarViewType.day:
+        return const DayView();
+    }
+  }
+  
+  /// 构建月视图
+  Widget _buildMonthView(BuildContext context) {
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        // 日历组件
+        ZenCalendarWidget(
+          focusedDay: controller.focusedDate.value,
+          selectedDay: controller.selectedDate.value,
+          onDaySelected: (selectedDay, focusedDay) {
+            controller.syncDateSelection(selectedDay);
+          },
+          onPageChanged: (focusedDay) {
+            controller.focusedDate.value = focusedDay;
+          },
+          events: controller.events,
+        ),
+        
+        const SizedBox(height: 24),
+        
+        // 日期标题
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              _formatSelectedDate(controller.selectedDate.value),
+              style: Theme.of(context).textTheme.headlineSmall,
+            ),
+            if (controller.selectedDateEvents.isNotEmpty)
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  '${controller.selectedDateEvents.length} 个事件',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: Theme.of(context).colorScheme.primary,
+                        fontWeight: FontWeight.bold,
+                      ),
+                ),
+              ),
+          ],
+        ),
+        
+        const SizedBox(height: 16),
+        
+        // 事件列表
+        EventListWidget(
+          events: controller.selectedDateEvents,
+          onEventTap: (event) async {
+            final result = await Get.toNamed('/event/${event.id}');
+            
+            // 如果删除或编辑了事件，重新加载
+            if (result == true) {
+              controller.loadEvents();
+            }
+          },
+          onEventDelete: (event) {
+            _showDeleteDialog(context, event);
+          },
+        ),
+      ],
+    );
   }
 
   /// 格式化选中日期

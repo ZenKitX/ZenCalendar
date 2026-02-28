@@ -1,7 +1,10 @@
 import 'package:get/get.dart';
 import '../../../data/models/event_model.dart';
+import '../../../data/models/calendar_view_type.dart';
 import '../../../data/repositories/event_repository.dart';
 import '../../../services/haptic_service.dart';
+import 'week_controller.dart';
+import 'day_controller.dart';
 
 /// Calendar 控制器
 class CalendarController extends GetxController {
@@ -14,12 +17,24 @@ class CalendarController extends GetxController {
   final focusedDate = DateTime.now().obs;
   final events = <EventModel>[].obs;
   final isLoading = false.obs;
+  final currentViewType = CalendarViewType.month.obs;
+  
+  // 子控制器
+  WeekController? _weekController;
+  DayController? _dayController;
   
   @override
   void onInit() {
     super.onInit();
     print('CalendarController initialized');
+    _initializeSubControllers();
     loadEvents();
+  }
+  
+  /// 初始化子控制器
+  void _initializeSubControllers() {
+    _weekController = Get.put(WeekController(), tag: 'week');
+    _dayController = Get.put(DayController(), tag: 'day');
   }
   
   @override
@@ -31,6 +46,9 @@ class CalendarController extends GetxController {
   @override
   void onClose() {
     print('CalendarController disposed');
+    // 清理子控制器
+    Get.delete<WeekController>(tag: 'week');
+    Get.delete<DayController>(tag: 'day');
     super.onClose();
   }
   
@@ -155,5 +173,37 @@ class CalendarController extends GetxController {
         snackPosition: SnackPosition.BOTTOM,
       );
     }
+  }
+  
+  /// 切换视图类型
+  void switchViewType(CalendarViewType viewType) {
+    if (currentViewType.value == viewType) return;
+    
+    currentViewType.value = viewType;
+    _hapticService.light();
+    
+    // 同步选中日期到子控制器
+    switch (viewType) {
+      case CalendarViewType.week:
+        _weekController?.selectDate(selectedDate.value);
+        break;
+      case CalendarViewType.day:
+        _dayController?.selectDate(selectedDate.value);
+        break;
+      case CalendarViewType.month:
+        // 月视图使用当前控制器
+        break;
+    }
+  }
+  
+  /// 获取当前视图的控制器
+  WeekController? get weekController => _weekController;
+  DayController? get dayController => _dayController;
+  
+  /// 同步日期选择到所有控制器
+  void syncDateSelection(DateTime date) {
+    selectedDate.value = date;
+    _weekController?.selectDate(date);
+    _dayController?.selectDate(date);
   }
 }
