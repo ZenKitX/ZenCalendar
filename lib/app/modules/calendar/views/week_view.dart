@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controllers/week_controller.dart';
+import '../controllers/calendar_controller.dart';
 import 'widgets/week_calendar_widget.dart';
 import 'widgets/event_list_widget.dart';
 

@@ -328,10 +328,10 @@ class DayCalendarWidget extends StatelessWidget {
                     ),
                   ),
                 
-                if (height > 60 && event.description.isNotEmpty) // 显示描述
+                if (height > 60 && event.description?.isNotEmpty == true) // 显示描述
                   Expanded(
                     child: Text(
-                      event.description,
+                      event.description!,
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: Theme.of(context).colorScheme.onPrimary.withOpacity(0.9),
                       ),
