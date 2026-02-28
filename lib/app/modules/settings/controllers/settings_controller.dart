@@ -31,7 +31,7 @@ class SettingsController extends GetxController {
   final locale = const Locale('zh', 'CN').obs;  // 语言设置
   final fontSize = 1.0.obs;  // 字体大小倍数 (0.8 - 1.5)
   final animationSpeed = 1.0.obs;  // 动画速度倍数 (0.5 - 2.0)
-  final primaryColor = Colors.blue.obs;  // 主题主色调
+  final Rx<Color> primaryColor = const Color(0xFF2196F3).obs;  // 主题主色调
   final defaultView = 'calendar'.obs;  // 首页视图 (calendar/intention)
   final autoBackup = false.obs;  // 自动备份
   
@@ -452,7 +452,7 @@ class SettingsController extends GetxController {
       locale.value = const Locale('zh', 'CN');
       fontSize.value = 1.0;
       animationSpeed.value = 1.0;
-      primaryColor.value = Colors.blue;
+      primaryColor.value = const Color(0xFF2196F3);  // 蓝色
       defaultView.value = 'calendar';
       autoBackup.value = false;
       

@@ -212,12 +212,12 @@ class AdvancedSettingsView extends GetView<SettingsController> {
   /// 主题自定义区域
   Widget _buildThemeSection(BuildContext context) {
     final colors = [
-      {'name': '蓝色', 'color': Colors.blue},
-      {'name': '紫色', 'color': Colors.purple},
-      {'name': '绿色', 'color': Colors.green},
-      {'name': '橙色', 'color': Colors.orange},
-      {'name': '粉色', 'color': Colors.pink},
-      {'name': '青色', 'color': Colors.cyan},
+      {'name': '蓝色', 'color': const Color(0xFF2196F3)},
+      {'name': '紫色', 'color': const Color(0xFF9C27B0)},
+      {'name': '绿色', 'color': const Color(0xFF4CAF50)},
+      {'name': '橙色', 'color': const Color(0xFFFF9800)},
+      {'name': '粉色', 'color': const Color(0xFFE91E63)},
+      {'name': '青色', 'color': const Color(0xFF00BCD4)},
     ];
     
     return Card(
