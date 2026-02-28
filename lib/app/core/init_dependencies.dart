@@ -4,6 +4,10 @@ import '../data/providers/local_storage_provider.dart';
 import '../data/repositories/event_repository.dart';
 import '../data/repositories/intention_repository.dart';
 import '../data/repositories/quote_repository.dart';
+import '../data/repositories/category_repository.dart';
+import '../data/services/export_service.dart';
+import '../data/services/import_service.dart';
+import '../data/services/backup_service.dart';
 import '../services/haptic_service.dart';
 
 /// 初始化依赖注入
@@ -35,9 +39,29 @@ Future<void> initDependencies() async {
     permanent: true,
   );
   
+  Get.put<CategoryRepository>(
+    CategoryRepository(Get.find<LocalStorageProvider>()),
+    permanent: true,
+  );
+  
   // 注册 Services
   Get.put<HapticService>(
     HapticService(),
+    permanent: true,
+  );
+  
+  Get.put<ExportService>(
+    ExportService(),
+    permanent: true,
+  );
+  
+  Get.put<ImportService>(
+    ImportService(),
+    permanent: true,
+  );
+  
+  Get.put<BackupService>(
+    BackupService(),
     permanent: true,
   );
   

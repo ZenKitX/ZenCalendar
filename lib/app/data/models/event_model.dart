@@ -12,6 +12,8 @@ class EventModel extends Equatable {
   final Color color;
   final bool isAllDay;
   final List<DateTime> reminders;
+  final String? categoryId; // 新增：分类 ID
+  final List<String> tags; // 新增：标签列表
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -24,6 +26,8 @@ class EventModel extends Equatable {
     required this.color,
     this.isAllDay = false,
     this.reminders = const [],
+    this.categoryId,
+    this.tags = const [],
     required this.createdAt,
     required this.updatedAt,
   });
@@ -37,6 +41,8 @@ class EventModel extends Equatable {
     Color? color,
     bool isAllDay = false,
     List<DateTime>? reminders,
+    String? categoryId,
+    List<String>? tags,
   }) {
     final now = DateTime.now();
     return EventModel(
@@ -48,6 +54,8 @@ class EventModel extends Equatable {
       color: color ?? Colors.blue,
       isAllDay: isAllDay,
       reminders: reminders ?? [],
+      categoryId: categoryId,
+      tags: tags ?? [],
       createdAt: now,
       updatedAt: now,
     );
@@ -63,6 +71,8 @@ class EventModel extends Equatable {
     Color? color,
     bool? isAllDay,
     List<DateTime>? reminders,
+    String? categoryId,
+    List<String>? tags,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -75,6 +85,8 @@ class EventModel extends Equatable {
       color: color ?? this.color,
       isAllDay: isAllDay ?? this.isAllDay,
       reminders: reminders ?? this.reminders,
+      categoryId: categoryId ?? this.categoryId,
+      tags: tags ?? this.tags,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
@@ -91,6 +103,8 @@ class EventModel extends Equatable {
       'color': color.value,
       'isAllDay': isAllDay,
       'reminders': reminders.map((r) => r.toIso8601String()).toList(),
+      'categoryId': categoryId,
+      'tags': tags,
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
     };
@@ -110,6 +124,8 @@ class EventModel extends Equatable {
               ?.map((r) => DateTime.parse(r as String))
               .toList() ??
           [],
+      categoryId: json['categoryId'] as String?,
+      tags: (json['tags'] as List<dynamic>?)?.cast<String>() ?? [],
       createdAt: DateTime.parse(json['createdAt'] as String),
       updatedAt: DateTime.parse(json['updatedAt'] as String),
     );
@@ -151,6 +167,8 @@ class EventModel extends Equatable {
         color,
         isAllDay,
         reminders,
+        categoryId,
+        tags,
         createdAt,
         updatedAt,
       ];

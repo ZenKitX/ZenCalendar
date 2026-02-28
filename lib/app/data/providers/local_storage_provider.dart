@@ -185,4 +185,27 @@ class LocalStorageProvider {
   bool containsKey(String key) {
     return _prefs.containsKey(key);
   }
+
+  /// 获取通用数据（用于分类等）
+  Future<dynamic> getData(String key) async {
+    final String? jsonStr = _prefs.getString(key);
+    if (jsonStr == null || jsonStr.isEmpty) {
+      return null;
+    }
+    try {
+      return json.decode(jsonStr);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  /// 保存通用数据（用于分类等）
+  Future<void> saveData(String key, dynamic data) async {
+    try {
+      final String jsonStr = json.encode(data);
+      await _prefs.setString(key, jsonStr);
+    } catch (e) {
+      rethrow;
+    }
+  }
 }

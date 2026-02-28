@@ -148,4 +148,14 @@ class IntentionRepository {
     final completed = intentions.where((i) => i.isCompleted).length;
     return completed / intentions.length;
   }
+
+  /// 获取所有意图（别名方法）
+  Future<List<IntentionModel>> getAllIntentions() async {
+    return await getAll();
+  }
+
+  /// 创建意图（别名方法）
+  Future<void> createIntention(IntentionModel intention) async {
+    return await create(intention);
+  }
 }
