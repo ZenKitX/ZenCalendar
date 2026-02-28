@@ -4,7 +4,7 @@ import '../../controllers/day_controller.dart';
 import '../../../../data/models/event_model.dart';
 
 /// 日视图日历组件
-class DayCalendarWidget extends StatelessWidget {
+class DayCalendarWidget extends StatefulWidget {
   final DayController controller;
   final Function(EventModel)? onEventTap;
   
@@ -13,6 +13,20 @@ class DayCalendarWidget extends StatelessWidget {
     required this.controller,
     this.onEventTap,
   });
+
+  @override
+  State<DayCalendarWidget> createState() => _DayCalendarWidgetState();
+}
+
+class _DayCalendarWidgetState extends State<DayCalendarWidget> {
+  @override
+  void initState() {
+    super.initState();
+    // 在下一帧滚动到当前时间
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      widget.controller.scrollToCurrentTime();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +39,7 @@ class DayCalendarWidget extends StatelessWidget {
           const SizedBox(height: 16),
           
           // 全天事件区域
-          if (controller.allDayEvents.isNotEmpty)
+          if (widget.controller.allDayEvents.isNotEmpty)
             _buildAllDayEventsSection(context),
           
           // 时间轴视图
@@ -52,14 +66,14 @@ class DayCalendarWidget extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           IconButton(
-            onPressed: controller.previousDay,
+            onPressed: widget.controller.previousDay,
             icon: const Icon(Icons.chevron_left),
             tooltip: '上一天',
           ),
           
           Expanded(
             child: Text(
-              controller.dayTitle,
+              widget.controller.dayTitle,
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.bold,
@@ -68,7 +82,7 @@ class DayCalendarWidget extends StatelessWidget {
           ),
           
           IconButton(
-            onPressed: controller.nextDay,
+            onPressed: widget.controller.nextDay,
             icon: const Icon(Icons.chevron_right),
             tooltip: '下一天',
           ),
@@ -101,7 +115,7 @@ class DayCalendarWidget extends StatelessWidget {
           
           const SizedBox(height: 8),
           
-          ...controller.allDayEvents.map((event) => _buildAllDayEventCard(context, event)),
+          ...widget.controller.allDayEvents.map((event) => _buildAllDayEventCard(context, event)),
         ],
       ),
     );
@@ -110,7 +124,7 @@ class DayCalendarWidget extends StatelessWidget {
   /// 构建全天事件卡片
   Widget _buildAllDayEventCard(BuildContext context, EventModel event) {
     return GestureDetector(
-      onTap: () => onEventTap?.call(event),
+      onTap: () => widget.onEventTap?.call(event),
       child: Container(
         margin: const EdgeInsets.only(bottom: 4),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -183,7 +197,7 @@ class DayCalendarWidget extends StatelessWidget {
     return Container(
       width: 60,
       child: ListView.builder(
-        controller: controller.scrollController,
+        controller: widget.controller.scrollController,
         itemCount: DayController.endHour - DayController.startHour,
         itemBuilder: (context, index) {
           final hour = DayController.startHour + index;
@@ -210,7 +224,7 @@ class DayCalendarWidget extends StatelessWidget {
       onTapDown: (details) {
         // 计算点击位置对应的时间
         final yPosition = details.localPosition.dy;
-        controller.createEventAtTime(yPosition);
+        widget.controller.createEventAtTime(yPosition);
       },
       child: Stack(
         children: [
@@ -218,7 +232,7 @@ class DayCalendarWidget extends StatelessWidget {
           _buildTimeGrid(context),
           
           // 当前时间线
-          if (controller.isToday(controller.selectedDate.value))
+          if (widget.controller.isToday(widget.controller.selectedDate.value))
             _buildCurrentTimeLine(context),
           
           // 事件卡片
@@ -231,7 +245,7 @@ class DayCalendarWidget extends StatelessWidget {
   /// 构建时间网格背景
   Widget _buildTimeGrid(BuildContext context) {
     return ListView.builder(
-      controller: controller.scrollController,
+      controller: widget.controller.scrollController,
       itemCount: DayController.endHour - DayController.startHour,
       itemBuilder: (context, index) {
         return Container(
@@ -251,7 +265,7 @@ class DayCalendarWidget extends StatelessWidget {
   
   /// 构建当前时间线
   Widget _buildCurrentTimeLine(BuildContext context) {
-    final position = controller.currentTimeLinePosition;
+    final position = widget.controller.currentTimeLinePosition;
     if (position < 0) return const SizedBox.shrink();
     
     return Positioned(
@@ -285,9 +299,9 @@ class DayCalendarWidget extends StatelessWidget {
   
   /// 构建事件卡片列表
   List<Widget> _buildEventCards(BuildContext context) {
-    return controller.timedEvents.map((event) {
-      final startY = controller.getYPositionForTime(event.startTime);
-      final endY = controller.getYPositionForTime(event.endTime);
+    return widget.controller.timedEvents.map((event) {
+      final startY = widget.controller.getYPositionForTime(event.startTime);
+      final endY = widget.controller.getYPositionForTime(event.endTime);
       final height = endY - startY;
       
       return Positioned(
@@ -296,7 +310,7 @@ class DayCalendarWidget extends StatelessWidget {
         right: 8,
         height: height.clamp(30.0, double.infinity), // 最小高度30
         child: GestureDetector(
-          onTap: () => onEventTap?.call(event),
+          onTap: () => widget.onEventTap?.call(event),
           child: Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(

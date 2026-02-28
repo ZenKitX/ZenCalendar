@@ -20,28 +20,28 @@ class WeekView extends StatelessWidget {
         );
       }
 
-      return Column(
-        children: [
-          // 周视图日历
-          WeekCalendarWidget(
-            controller: controller,
-            onEventTap: (event) async {
-              final result = await Get.toNamed('/event/${event.id}');
-              
-              // 如果删除或编辑了事件，重新加载
-              if (result == true) {
-                controller.loadEvents();
-              }
-            },
-          ),
-          
-          const SizedBox(height: 24),
-          
-          // 选中日期的事件详情
-          Expanded(
-            child: _buildSelectedDateEvents(context, controller),
-          ),
-        ],
+      return SingleChildScrollView(
+        child: Column(
+          children: [
+            // 周视图日历
+            WeekCalendarWidget(
+              controller: controller,
+              onEventTap: (event) async {
+                final result = await Get.toNamed('/event/${event.id}');
+                
+                // 如果删除或编辑了事件，重新加载
+                if (result == true) {
+                  controller.loadEvents();
+                }
+              },
+            ),
+            
+            const SizedBox(height: 24),
+            
+            // 选中日期的事件详情
+            _buildSelectedDateEvents(context, controller),
+          ],
+        ),
       );
     });
   }
@@ -49,6 +49,11 @@ class WeekView extends StatelessWidget {
   /// 构建选中日期的事件列表
   Widget _buildSelectedDateEvents(BuildContext context, WeekController controller) {
     return Container(
+      constraints: const BoxConstraints(
+        minHeight: 200,
+        maxHeight: 400,
+      ),
+      margin: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(12),
@@ -58,6 +63,7 @@ class WeekView extends StatelessWidget {
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
           // 标题栏
           Padding(
@@ -100,7 +106,7 @@ class WeekView extends StatelessWidget {
           ),
           
           // 事件列表
-          Expanded(
+          Flexible(
             child: controller.selectedDateEvents.isEmpty
               ? _buildEmptyState(context)
               : EventListWidget(

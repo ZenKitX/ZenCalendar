@@ -14,7 +14,13 @@ class DayController extends GetxController {
   final selectedDate = DateTime.now().obs;
   final events = <EventModel>[].obs;
   final isLoading = false.obs;
-  final scrollController = ScrollController();
+  ScrollController? _scrollController;
+  
+  // 获取 ScrollController（延迟初始化）
+  ScrollController get scrollController {
+    _scrollController ??= ScrollController();
+    return _scrollController!;
+  }
   
   // 时间轴配置
   static const int startHour = 0;
@@ -26,36 +32,35 @@ class DayController extends GetxController {
     super.onInit();
     print('DayController initialized');
     loadEvents();
-    _scrollToCurrentTime();
+  }
+  
+  /// 滚动到当前时间（由 Widget 调用）
+  void scrollToCurrentTime() {
+    if (isToday(selectedDate.value)) {
+      final now = DateTime.now();
+      final currentHour = now.hour;
+      final currentMinute = now.minute;
+      
+      // 计算滚动位置（提前2小时显示）
+      final scrollPosition = (currentHour - 2) * hourHeight + 
+                            (currentMinute / 60) * hourHeight;
+      
+      if (_scrollController != null && 
+          _scrollController!.hasClients && 
+          scrollPosition > 0) {
+        _scrollController!.animateTo(
+          scrollPosition.clamp(0.0, _scrollController!.position.maxScrollExtent),
+          duration: const Duration(milliseconds: 500),
+          curve: Curves.easeInOut,
+        );
+      }
+    }
   }
   
   @override
   void onClose() {
-    scrollController.dispose();
+    _scrollController?.dispose();
     super.onClose();
-  }
-  
-  /// 滚动到当前时间
-  void _scrollToCurrentTime() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (isToday(selectedDate.value)) {
-        final now = DateTime.now();
-        final currentHour = now.hour;
-        final currentMinute = now.minute;
-        
-        // 计算滚动位置（提前2小时显示）
-        final scrollPosition = (currentHour - 2) * hourHeight + 
-                              (currentMinute / 60) * hourHeight;
-        
-        if (scrollController.hasClients && scrollPosition > 0) {
-          scrollController.animateTo(
-            scrollPosition.clamp(0.0, scrollController.position.maxScrollExtent),
-            duration: const Duration(milliseconds: 500),
-            curve: Curves.easeInOut,
-          );
-        }
-      }
-    });
   }
   
   /// 加载事件
@@ -81,28 +86,28 @@ class DayController extends GetxController {
   void selectDate(DateTime date) {
     selectedDate.value = date;
     _hapticService.light();
-    _scrollToCurrentTime();
+    scrollToCurrentTime();
   }
   
   /// 切换到上一天
   void previousDay() {
     selectedDate.value = selectedDate.value.subtract(const Duration(days: 1));
     _hapticService.light();
-    _scrollToCurrentTime();
+    scrollToCurrentTime();
   }
   
   /// 切换到下一天
   void nextDay() {
     selectedDate.value = selectedDate.value.add(const Duration(days: 1));
     _hapticService.light();
-    _scrollToCurrentTime();
+    scrollToCurrentTime();
   }
   
   /// 回到今天
   void goToToday() {
     selectedDate.value = DateTime.now();
     _hapticService.medium();
-    _scrollToCurrentTime();
+    scrollToCurrentTime();
   }
   
   /// 获取选中日期的事件
