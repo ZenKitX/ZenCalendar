@@ -11,6 +11,8 @@ abstract class Routes {
   static const CREATE_EVENT = _Paths.CREATE_EVENT;
   static const EDIT_EVENT = _Paths.EDIT_EVENT;
   static const SETTINGS = _Paths.SETTINGS;
+  static const SEARCH = _Paths.SEARCH;
+  static const MEDITATION = _Paths.MEDITATION;
 }
 
 /// 路由路径常量
@@ -24,4 +26,6 @@ abstract class _Paths {
   static const CREATE_EVENT = '/create-event';
   static const EDIT_EVENT = '/edit-event/:id';
   static const SETTINGS = '/settings';
+  static const SEARCH = '/search';
+  static const MEDITATION = '/meditation';
 }

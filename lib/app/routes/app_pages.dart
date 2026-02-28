@@ -12,6 +12,10 @@ import '../modules/intention/bindings/intention_binding.dart';
 import '../modules/intention/views/intention_view.dart';
 import '../modules/settings/bindings/settings_binding.dart';
 import '../modules/settings/views/settings_view.dart';
+import '../modules/search/bindings/search_binding.dart';
+import '../modules/search/views/search_view.dart';
+import '../modules/meditation/bindings/meditation_binding.dart';
+import '../modules/meditation/views/meditation_view.dart';
 
 part 'app_routes.dart';
 
@@ -82,6 +86,24 @@ class AppPages {
       name: _Paths.SETTINGS,
       page: () => const SettingsView(),
       binding: SettingsBinding(),
+      transition: Transition.rightToLeft,
+      transitionDuration: const Duration(milliseconds: 300),
+    ),
+    
+    // 搜索页面
+    GetPage(
+      name: _Paths.SEARCH,
+      page: () => const SearchView(),
+      binding: SearchBinding(),
+      transition: Transition.downToUp,
+      transitionDuration: const Duration(milliseconds: 300),
+    ),
+    
+    // 冥想页面
+    GetPage(
+      name: _Paths.MEDITATION,
+      page: () => const MeditationView(),
+      binding: MeditationBinding(),
       transition: Transition.rightToLeft,
       transitionDuration: const Duration(milliseconds: 300),
     ),

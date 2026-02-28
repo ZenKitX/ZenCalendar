@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controllers/create_event_controller.dart';
+import 'widgets/recurrence_rule_picker.dart';
 
 /// 创建事件视图
 class CreateEventView extends GetView<CreateEventController> {
@@ -130,12 +131,41 @@ class CreateEventView extends GetView<CreateEventController> {
                     ),
                   ),
                 ),
+                
+                const SizedBox(height: 12),
               ],
             );
           }),
+          
+          // 重复规则选择
+          Obx(() => ListTile(
+                leading: const Icon(Icons.repeat_outlined),
+                title: const Text('重复'),
+                subtitle: Text(controller.recurrenceDescription),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => _showRecurrenceRulePicker(context),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  side: BorderSide(
+                    color: Theme.of(context).dividerColor,
+                  ),
+                ),
+              )),
         ],
       ),
     );
+  }
+
+  /// 显示重复规则选择器
+  Future<void> _showRecurrenceRulePicker(BuildContext context) async {
+    final rule = await showRecurrenceRulePicker(
+      context,
+      initialRule: controller.recurrenceRule.value,
+    );
+    
+    if (rule != null || controller.recurrenceRule.value != null) {
+      controller.setRecurrenceRule(rule);
+    }
   }
 
   /// 格式化日期

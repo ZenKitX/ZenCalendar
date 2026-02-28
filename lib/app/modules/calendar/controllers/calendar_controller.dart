@@ -1,7 +1,10 @@
 import 'package:get/get.dart';
 import '../../../data/models/event_model.dart';
+import '../../../data/models/calendar_view_type.dart';
 import '../../../data/repositories/event_repository.dart';
 import '../../../services/haptic_service.dart';
+import 'week_controller.dart';
+import 'day_controller.dart';
 
 /// Calendar 控制器
 class CalendarController extends GetxController {
@@ -14,6 +17,7 @@ class CalendarController extends GetxController {
   final focusedDate = DateTime.now().obs;
   final events = <EventModel>[].obs;
   final isLoading = false.obs;
+  final currentViewType = CalendarViewType.month.obs;
   
   @override
   void onInit() {
@@ -154,6 +158,44 @@ class CalendarController extends GetxController {
         '创建事件失败',
         snackPosition: SnackPosition.BOTTOM,
       );
+    }
+  }
+  
+  /// 切换视图类型
+  void switchViewType(CalendarViewType viewType) {
+    if (currentViewType.value == viewType) return;
+    
+    currentViewType.value = viewType;
+    _hapticService.light();
+    
+    // 同步选中日期到子控制器
+    switch (viewType) {
+      case CalendarViewType.week:
+        if (Get.isRegistered<WeekController>(tag: 'week')) {
+          Get.find<WeekController>(tag: 'week').selectDate(selectedDate.value);
+        }
+        break;
+      case CalendarViewType.day:
+        if (Get.isRegistered<DayController>(tag: 'day')) {
+          Get.find<DayController>(tag: 'day').selectDate(selectedDate.value);
+        }
+        break;
+      case CalendarViewType.month:
+        // 月视图使用当前控制器
+        break;
+    }
+  }
+  
+  /// 同步日期选择到所有控制器
+  void syncDateSelection(DateTime date) {
+    selectedDate.value = date;
+    
+    if (Get.isRegistered<WeekController>(tag: 'week')) {
+      Get.find<WeekController>(tag: 'week').selectDate(date);
+    }
+    
+    if (Get.isRegistered<DayController>(tag: 'day')) {
+      Get.find<DayController>(tag: 'day').selectDate(date);
     }
   }
 }

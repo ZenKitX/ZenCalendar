@@ -27,6 +27,12 @@ class SettingsView extends GetView<SettingsController> {
           
           const SizedBox(height: 24),
           
+          // 功能
+          _buildSectionTitle(context, '功能'),
+          _buildFeaturesCard(context),
+          
+          const SizedBox(height: 24),
+          
           // 数据管理
           _buildSectionTitle(context, '数据管理'),
           _buildDataCard(context),
@@ -135,6 +141,23 @@ class SettingsView extends GetView<SettingsController> {
                     : null,
                 secondary: const Icon(Icons.wb_sunny_outlined),
               )),
+        ],
+      ),
+    );
+  }
+
+  /// 构建功能卡片
+  Widget _buildFeaturesCard(BuildContext context) {
+    return Card(
+      child: Column(
+        children: [
+          ListTile(
+            leading: const Icon(Icons.self_improvement),
+            title: const Text('冥想'),
+            subtitle: const Text('正念冥想练习'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => Get.toNamed('/meditation'),
+          ),
         ],
       ),
     );
