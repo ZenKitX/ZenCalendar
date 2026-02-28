@@ -27,6 +27,14 @@ class SettingsController extends GetxController {
   final eventReminders = true.obs;
   final intentionReminders = true.obs;
   
+  // 高级设置 (Phase 8.6)
+  final locale = const Locale('zh', 'CN').obs;  // 语言设置
+  final fontSize = 1.0.obs;  // 字体大小倍数 (0.8 - 1.5)
+  final animationSpeed = 1.0.obs;  // 动画速度倍数 (0.5 - 2.0)
+  final primaryColor = Colors.blue.obs;  // 主题主色调
+  final defaultView = 'calendar'.obs;  // 首页视图 (calendar/intention)
+  final autoBackup = false.obs;  // 自动备份
+  
   // 数据统计
   final totalEvents = 0.obs;
   final totalIntentions = 0.obs;
@@ -55,6 +63,26 @@ class SettingsController extends GetxController {
       eventReminders.value = settings['eventReminders'] as bool? ?? true;
       intentionReminders.value = settings['intentionReminders'] as bool? ?? true;
       
+      // 加载高级设置 (Phase 8.6)
+      final localeStr = settings['locale'] as String?;
+      if (localeStr != null) {
+        final parts = localeStr.split('_');
+        if (parts.length == 2) {
+          locale.value = Locale(parts[0], parts[1]);
+        }
+      }
+      
+      fontSize.value = settings['fontSize'] as double? ?? 1.0;
+      animationSpeed.value = settings['animationSpeed'] as double? ?? 1.0;
+      
+      final colorValue = settings['primaryColor'] as int?;
+      if (colorValue != null) {
+        primaryColor.value = Color(colorValue);
+      }
+      
+      defaultView.value = settings['defaultView'] as String? ?? 'calendar';
+      autoBackup.value = settings['autoBackup'] as bool? ?? false;
+      
       print('✅ Settings loaded');
     } catch (e) {
       print('❌ Error loading settings: $e');
@@ -68,6 +96,14 @@ class SettingsController extends GetxController {
       await _storageProvider.saveSetting('notificationsEnabled', notificationsEnabled.value);
       await _storageProvider.saveSetting('eventReminders', eventReminders.value);
       await _storageProvider.saveSetting('intentionReminders', intentionReminders.value);
+      
+      // 保存高级设置 (Phase 8.6)
+      await _storageProvider.saveSetting('locale', '${locale.value.languageCode}_${locale.value.countryCode}');
+      await _storageProvider.saveSetting('fontSize', fontSize.value);
+      await _storageProvider.saveSetting('animationSpeed', animationSpeed.value);
+      await _storageProvider.saveSetting('primaryColor', primaryColor.value.value);
+      await _storageProvider.saveSetting('defaultView', defaultView.value);
+      await _storageProvider.saveSetting('autoBackup', autoBackup.value);
       
       print('✅ Settings saved');
     } catch (e) {
@@ -335,6 +371,110 @@ class SettingsController extends GetxController {
         return ThemeMode.dark;
       default:
         return ThemeMode.system;
+    }
+  }
+  
+  // ========== Phase 8.6 高级设置方法 ==========
+  
+  /// 切换语言
+  Future<void> changeLocale(Locale newLocale) async {
+    locale.value = newLocale;
+    Get.updateLocale(newLocale);
+    await saveSettings();
+    _hapticService.selection();
+    
+    Get.snackbar(
+      '语言已更改',
+      newLocale.languageCode == 'zh' ? '已切换到中文' : 'Switched to English',
+      snackPosition: SnackPosition.BOTTOM,
+      duration: const Duration(seconds: 2),
+    );
+  }
+  
+  /// 调整字体大小
+  Future<void> changeFontSize(double size) async {
+    fontSize.value = size.clamp(0.8, 1.5);
+    await saveSettings();
+    _hapticService.light();
+  }
+  
+  /// 调整动画速度
+  Future<void> changeAnimationSpeed(double speed) async {
+    animationSpeed.value = speed.clamp(0.5, 2.0);
+    await saveSettings();
+    _hapticService.light();
+  }
+  
+  /// 更改主题颜色
+  Future<void> changePrimaryColor(Color color) async {
+    primaryColor.value = color;
+    await saveSettings();
+    _hapticService.selection();
+    
+    Get.snackbar(
+      '主题颜色已更改',
+      '重启应用后生效',
+      snackPosition: SnackPosition.BOTTOM,
+      duration: const Duration(seconds: 2),
+    );
+  }
+  
+  /// 切换默认视图
+  Future<void> changeDefaultView(String view) async {
+    defaultView.value = view;
+    await saveSettings();
+    _hapticService.selection();
+  }
+  
+  /// 切换自动备份
+  Future<void> toggleAutoBackup(bool value) async {
+    autoBackup.value = value;
+    await saveSettings();
+    _hapticService.light();
+    
+    if (value) {
+      Get.snackbar(
+        '自动备份已启用',
+        '每天自动备份数据',
+        snackPosition: SnackPosition.BOTTOM,
+        duration: const Duration(seconds: 2),
+      );
+    }
+  }
+  
+  /// 重置所有设置
+  Future<void> resetAllSettings() async {
+    try {
+      themeMode.value = ThemeMode.system;
+      notificationsEnabled.value = true;
+      eventReminders.value = true;
+      intentionReminders.value = true;
+      locale.value = const Locale('zh', 'CN');
+      fontSize.value = 1.0;
+      animationSpeed.value = 1.0;
+      primaryColor.value = Colors.blue;
+      defaultView.value = 'calendar';
+      autoBackup.value = false;
+      
+      await saveSettings();
+      Get.changeThemeMode(ThemeMode.system);
+      Get.updateLocale(const Locale('zh', 'CN'));
+      
+      _hapticService.success();
+      Get.snackbar(
+        '设置已重置',
+        '所有设置已恢复默认值',
+        snackPosition: SnackPosition.BOTTOM,
+        duration: const Duration(seconds: 2),
+      );
+    } catch (e) {
+      print('❌ Error resetting settings: $e');
+      _hapticService.error();
+      Get.snackbar(
+        '重置失败',
+        '无法重置设置',
+        snackPosition: SnackPosition.BOTTOM,
+      );
     }
   }
 }
