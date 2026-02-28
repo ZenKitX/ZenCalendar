@@ -1,0 +1,18 @@
+# Components Directory
+
+This directory is reserved for global shared UI components that are used across multiple modules.
+
+## Purpose
+- Reusable UI components
+- Cross-module widgets
+- Common UI elements
+
+## Examples
+- Custom buttons
+- Custom cards
+- Custom dialogs
+- Loading indicators
+- Empty state widgets
+
+## Note
+Module-specific components should be placed in their respective module's `views/widgets/` directory.

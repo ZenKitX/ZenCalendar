@@ -1,0 +1,20 @@
+# Utils Directory
+
+This directory is reserved for utility classes and helper functions.
+
+## Purpose
+- Utility functions
+- Helper classes
+- Constants
+- Extensions
+
+## Examples
+- Date formatting utilities
+- String manipulation helpers
+- Validation utilities
+- Math helpers
+- Color utilities
+- Constants definitions
+
+## Note
+Module-specific utilities should be placed in their respective module directories.
