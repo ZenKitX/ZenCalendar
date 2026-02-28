@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../data/models/calendar_view_type.dart';
 import '../controllers/calendar_controller.dart';
+import '../controllers/week_controller.dart';
+import '../controllers/day_controller.dart';
 import 'widgets/zen_calendar_widget.dart';
 import 'widgets/event_list_widget.dart';
 import 'widgets/view_switcher_widget.dart';
@@ -33,10 +35,14 @@ class CalendarView extends GetView<CalendarController> {
                     controller.goToToday();
                     break;
                   case CalendarViewType.week:
-                    controller.weekController?.goToThisWeek();
+                    if (Get.isRegistered<WeekController>(tag: 'week')) {
+                      Get.find<WeekController>(tag: 'week').goToThisWeek();
+                    }
                     break;
                   case CalendarViewType.day:
-                    controller.dayController?.goToToday();
+                    if (Get.isRegistered<DayController>(tag: 'day')) {
+                      Get.find<DayController>(tag: 'day').goToToday();
+                    }
                     break;
                 }
               },
@@ -48,8 +54,12 @@ class CalendarView extends GetView<CalendarController> {
           onRefresh: () async {
             await controller.loadEvents();
             // 同时刷新子控制器
-            await controller.weekController?.loadEvents();
-            await controller.dayController?.loadEvents();
+            if (Get.isRegistered<WeekController>(tag: 'week')) {
+              await Get.find<WeekController>(tag: 'week').loadEvents();
+            }
+            if (Get.isRegistered<DayController>(tag: 'day')) {
+              await Get.find<DayController>(tag: 'day').loadEvents();
+            }
           },
           child: Column(
             children: [
@@ -76,10 +86,14 @@ class CalendarView extends GetView<CalendarController> {
                 selectedDate = controller.selectedDate.value;
                 break;
               case CalendarViewType.week:
-                selectedDate = controller.weekController?.selectedDate.value ?? DateTime.now();
+                selectedDate = Get.isRegistered<WeekController>(tag: 'week')
+                    ? Get.find<WeekController>(tag: 'week').selectedDate.value
+                    : DateTime.now();
                 break;
               case CalendarViewType.day:
-                selectedDate = controller.dayController?.selectedDate.value ?? DateTime.now();
+                selectedDate = Get.isRegistered<DayController>(tag: 'day')
+                    ? Get.find<DayController>(tag: 'day').selectedDate.value
+                    : DateTime.now();
                 break;
             }
             
@@ -91,8 +105,12 @@ class CalendarView extends GetView<CalendarController> {
             // 如果创建成功，重新加载事件
             if (result == true) {
               controller.loadEvents();
-              controller.weekController?.loadEvents();
-              controller.dayController?.loadEvents();
+              if (Get.isRegistered<WeekController>(tag: 'week')) {
+                Get.find<WeekController>(tag: 'week').loadEvents();
+              }
+              if (Get.isRegistered<DayController>(tag: 'day')) {
+                Get.find<DayController>(tag: 'day').loadEvents();
+              }
             }
           },
           icon: const Icon(Icons.add),

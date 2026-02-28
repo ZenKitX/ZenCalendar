@@ -19,22 +19,11 @@ class CalendarController extends GetxController {
   final isLoading = false.obs;
   final currentViewType = CalendarViewType.month.obs;
   
-  // 子控制器
-  WeekController? _weekController;
-  DayController? _dayController;
-  
   @override
   void onInit() {
     super.onInit();
     print('CalendarController initialized');
-    _initializeSubControllers();
     loadEvents();
-  }
-  
-  /// 初始化子控制器
-  void _initializeSubControllers() {
-    _weekController = Get.put(WeekController(), tag: 'week');
-    _dayController = Get.put(DayController(), tag: 'day');
   }
   
   @override
@@ -46,9 +35,6 @@ class CalendarController extends GetxController {
   @override
   void onClose() {
     print('CalendarController disposed');
-    // 清理子控制器
-    Get.delete<WeekController>(tag: 'week');
-    Get.delete<DayController>(tag: 'day');
     super.onClose();
   }
   
@@ -185,10 +171,14 @@ class CalendarController extends GetxController {
     // 同步选中日期到子控制器
     switch (viewType) {
       case CalendarViewType.week:
-        _weekController?.selectDate(selectedDate.value);
+        if (Get.isRegistered<WeekController>(tag: 'week')) {
+          Get.find<WeekController>(tag: 'week').selectDate(selectedDate.value);
+        }
         break;
       case CalendarViewType.day:
-        _dayController?.selectDate(selectedDate.value);
+        if (Get.isRegistered<DayController>(tag: 'day')) {
+          Get.find<DayController>(tag: 'day').selectDate(selectedDate.value);
+        }
         break;
       case CalendarViewType.month:
         // 月视图使用当前控制器
@@ -196,14 +186,16 @@ class CalendarController extends GetxController {
     }
   }
   
-  /// 获取当前视图的控制器
-  WeekController? get weekController => _weekController;
-  DayController? get dayController => _dayController;
-  
   /// 同步日期选择到所有控制器
   void syncDateSelection(DateTime date) {
     selectedDate.value = date;
-    _weekController?.selectDate(date);
-    _dayController?.selectDate(date);
+    
+    if (Get.isRegistered<WeekController>(tag: 'week')) {
+      Get.find<WeekController>(tag: 'week').selectDate(date);
+    }
+    
+    if (Get.isRegistered<DayController>(tag: 'day')) {
+      Get.find<DayController>(tag: 'day').selectDate(date);
+    }
   }
 }
